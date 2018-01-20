@@ -67,7 +67,7 @@ class Data_i2b2(object):
                 for i in range(len(tokens)):
                     tokens[i].pos = pos_tagged[i][-1]
 
-                self.train_data[record_id] = {"raw": raw_text, "orig": original_text, "tokens": tokens}
+                output_variable[record_id] = {"raw": raw_text, "orig": original_text, "tokens": tokens}
 
         return self
 
