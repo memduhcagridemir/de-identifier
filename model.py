@@ -9,7 +9,7 @@ class Model(object):
         self.batcher = train_batcher
         self.test_batcher = test_batcher
         self.window_size = 5
-        self.number_of_features = 460
+        self.number_of_features = 464
 
         self.graph = tf.Graph()
         with self.graph.as_default():
@@ -19,23 +19,20 @@ class Model(object):
             x_flatted = tf.reshape(self.x, [-1, self.window_size * self.number_of_features])
 
             w = {
-                "1": tf.Variable(tf.random_normal([self.window_size * self.number_of_features, 460])),
-                "2": tf.Variable(tf.random_normal([460, 460])),
-                "3": tf.Variable(tf.random_normal([460, 460])),
-                "4": tf.Variable(tf.random_normal([460, 2])),
+                "1": tf.Variable(tf.random_normal([self.window_size * self.number_of_features, self.window_size * self.number_of_features])),
+                "2": tf.Variable(tf.random_normal([self.window_size * self.number_of_features, self.window_size * self.number_of_features])),
+                "3": tf.Variable(tf.random_normal([self.window_size * self.number_of_features, 2])),
             }
 
             b = {
-                "1": tf.Variable(tf.random_normal([460])),
-                "2": tf.Variable(tf.random_normal([460])),
-                "3": tf.Variable(tf.random_normal([460])),
-                "4": tf.Variable(tf.random_normal([2]))
+                "1": tf.Variable(tf.random_normal([self.window_size * self.number_of_features])),
+                "2": tf.Variable(tf.random_normal([self.window_size * self.number_of_features])),
+                "3": tf.Variable(tf.random_normal([2]))
             }
 
             y1 = tf.nn.tanh(tf.matmul(x_flatted, w["1"]) + b["1"])
             y2 = tf.nn.tanh(tf.matmul(y1, w["2"]) + b["2"])
-            y3 = tf.nn.tanh(tf.matmul(y2, w["3"]) + b["3"])
-            y_ = tf.matmul(y3, w["4"]) + b["4"]
+            y_ = tf.matmul(y2, w["3"]) + b["3"]
 
             cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=y_))
             self.train_step = tf.train.AdamOptimizer().minimize(cross_entropy)

@@ -1,9 +1,6 @@
-import pickle
-
 from Dataset import Data_i2b2
 from model import Model
 from batcher import Batcher
-from nltk import word_tokenize, pos_tag
 
 
 def generate_vocabulary(dataset):
