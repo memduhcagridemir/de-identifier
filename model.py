@@ -1,7 +1,4 @@
-import os
 import tensorflow as tf
-
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 class Model(object):
@@ -81,15 +78,15 @@ class Model(object):
                 self.test_batcher.reset_batches()
                 batch_x, batch_y = self.test_batcher.get_all()
 
-                print(sess.run(self.accuracy, feed_dict={self.x: batch_x, self.y: batch_y}))
-                print(sess.run([self.tp, self.tn, self.fp, self.fn], feed_dict={self.x: batch_x, self.y: batch_y}))
+                print(sess.run([self.accuracy, self.tp, self.tn, self.fp, self.fn],
+                               feed_dict={self.x: batch_x, self.y: batch_y}))
 
                 saver = tf.train.Saver()
-                saver.save(sess, "model/epoch", global_step=e)
+                saver.save(sess, "data/model/epoch", global_step=e)
 
     def test(self, x):
         with tf.Session(graph=self.graph) as sess:
             saver = tf.train.Saver()
-            saver.restore(sess, "data/epoch-37")
+            saver.restore(sess, "data/model/epoch-37")
 
             return sess.run(self.predict, feed_dict={self.x: x})

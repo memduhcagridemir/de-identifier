@@ -27,6 +27,9 @@ class Data_i2b2(object):
         self.train_data = {}
         self.test_data = {}
 
+        self.vocabulary_all = {}
+        self.vocabulary_enumerated = {}
+
     def load_data(self):
         for input_file, output_variable in [('deid_surrogate_train_all_version2.xml', self.train_data),
                                             ('deid_surrogate_test_all_groundtruth_version2.xml', self.test_data)]:
@@ -82,5 +85,31 @@ class Data_i2b2(object):
             tmp_obj = pickle.load(pr)
 
         self.__dict__.update(tmp_obj.__dict__)
+
+        return self
+
+    def generate_vocabulary(self):
+        total_vocabulary_occurrances = 0
+        for record_id, record in self.train_data.items():
+            for i in range(len(record['tokens'])):
+                if i < 2 or i >= len(record['tokens']) - 2:
+                    continue
+
+                if record['tokens'][i].type:
+                    for window_index in range(i - 2, i + 3):
+                        if not record['tokens'][window_index].type:
+                            total_vocabulary_occurrances += 1
+                            if record['tokens'][window_index].text in self.vocabulary_all:
+                                self.vocabulary_all[record['tokens'][window_index].text] += 1
+                            else:
+                                self.vocabulary_all[record['tokens'][window_index].text] = 1
+
+        word_id = 0
+        for word, freq in self.vocabulary_all.items():
+            # if freq / total_vocabulary_occurrances > 0:
+            if freq > 5:
+                # means taking every word
+                self.vocabulary_enumerated[word] = word_id
+                word_id += 1
 
         return self
