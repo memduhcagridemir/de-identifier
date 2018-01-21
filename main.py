@@ -10,9 +10,12 @@ data_i2b2 = data_i2b2.load()
 data_i2b2.generate_vocabulary()
 
 train_batcher = Batcher(data_i2b2.train_data, data_i2b2.vocabulary_enumerated)
-test_batcher = Batcher(data_i2b2.test_data, data_i2b2.vocabulary_enumerated)
-model = Model(train_batcher, test_batcher)
+train_batcher.equalize_classes()
 
-# model.train()
+test_batcher = Batcher(data_i2b2.test_data, data_i2b2.vocabulary_enumerated)
+test_batcher.equalize_classes()
+
+model = Model(train_batcher, test_batcher)
+model.train()
 # model.test()
 pass

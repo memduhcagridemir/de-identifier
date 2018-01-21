@@ -6,7 +6,7 @@ class Model(object):
         self.batcher = train_batcher
         self.test_batcher = test_batcher
         self.window_size = 5
-        self.number_of_features = 464
+        self.number_of_features = 550
 
         self.graph = tf.Graph()
         with self.graph.as_default():

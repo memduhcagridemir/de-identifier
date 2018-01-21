@@ -107,7 +107,7 @@ class Data_i2b2(object):
         word_id = 0
         for word, freq in self.vocabulary_all.items():
             # if freq / total_vocabulary_occurrances > 0:
-            if freq > 5:
+            if freq > 3:
                 # means taking every word
                 self.vocabulary_enumerated[word] = word_id
                 word_id += 1

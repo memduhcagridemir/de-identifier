@@ -83,3 +83,25 @@ class Batcher(object):
 
         return self.input_tokens[self.batch_num * self.batch_length:(self.batch_num+1) * self.batch_length], \
             self.output_tokens[self.batch_num * self.batch_length:(self.batch_num+1) * self.batch_length]
+
+    def equalize_classes(self):
+        yes_tokens = []
+        no_tokens = []
+        for i in range(len(self.output_tokens)):
+            if self.output_tokens[i][0] == 1:
+                no_tokens.append(i)
+            else:
+                yes_tokens.append(i)
+
+        delete_ids = []
+        while len(no_tokens) > len(yes_tokens):
+            index_to_delete = random.randrange(0, len(no_tokens))
+            delete_ids.append(no_tokens[index_to_delete])
+            del no_tokens[index_to_delete]
+
+        delete_ids.sort(reverse=True)
+        for index_to_delete in delete_ids:
+            del self.input_tokens[index_to_delete]
+            del self.output_tokens[index_to_delete]
+
+        return self
