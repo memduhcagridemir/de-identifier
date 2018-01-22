@@ -1,45 +1,58 @@
 import tensorflow as tf
-
+from tensorflow.contrib import rnn
 
 class Model(object):
     def __init__(self, train_batcher=None, test_batcher=None):
         self.batcher = train_batcher
         self.test_batcher = test_batcher
-        self.window_size = 5
+        self.number_of_timesteps = 8
         self.number_of_features = 550
 
         self.graph = tf.Graph()
         with self.graph.as_default():
-            self.x = tf.placeholder(tf.float32, [None, self.window_size, self.number_of_features])
+            self.x = tf.placeholder(tf.float32, [None, self.number_of_timesteps, self.number_of_features])
             self.y = tf.placeholder(tf.float32, [None, 2])
 
-            x_flatted = tf.reshape(self.x, [-1, self.window_size * self.number_of_features])
+            number_of_hidden = 512
+            w = { "out": tf.Variable(tf.random_normal([2 * number_of_hidden, 2])) }
+            b = { "out": tf.Variable(tf.random_normal([2])) }
 
-            w = {
-                "1": tf.Variable(tf.random_normal([self.window_size * self.number_of_features, self.window_size * self.number_of_features])),
-                "2": tf.Variable(tf.random_normal([self.window_size * self.number_of_features, self.window_size * self.number_of_features])),
-                "3": tf.Variable(tf.random_normal([self.window_size * self.number_of_features, 2])),
-            }
+            def BiRNN(x, weights, biases):
+                # Prepare data shape to match `rnn` function requirements
+                # Current data input shape: (batch_size, timesteps, n_input)
+                # Required shape: 'timesteps' tensors list of shape (batch_size, num_input)
 
-            b = {
-                "1": tf.Variable(tf.random_normal([self.window_size * self.number_of_features])),
-                "2": tf.Variable(tf.random_normal([self.window_size * self.number_of_features])),
-                "3": tf.Variable(tf.random_normal([2]))
-            }
+                # Unstack to get a list of 'timesteps' tensors of shape (batch_size, num_input)
+                x = tf.unstack(x, self.number_of_timesteps, 1)
 
-            y1 = tf.nn.tanh(tf.matmul(x_flatted, w["1"]) + b["1"])
-            y2 = tf.nn.tanh(tf.matmul(y1, w["2"]) + b["2"])
-            y_ = tf.matmul(y2, w["3"]) + b["3"]
+                # Define lstm cells with tensorflow
+                # Forward direction cell
+                lstm_fw_cell = rnn.BasicLSTMCell(number_of_hidden, forget_bias=1.0)
+                # Backward direction cell
+                lstm_bw_cell = rnn.BasicLSTMCell(number_of_hidden, forget_bias=1.0)
 
-            cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=y_))
-            self.train_step = tf.train.AdamOptimizer().minimize(cross_entropy)
+                # Get lstm cell output
+                outputs, _, _ = rnn.static_bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32)
 
-            correct_prediction = tf.equal(tf.argmax(self.y, 1), tf.argmax(y_, 1))
-            self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+                # Linear activation, using rnn inner loop last output
+                return tf.matmul(outputs[-1], weights['out']) + biases['out']
 
-            self.predict = tf.argmax(tf.nn.softmax(y_), 1)
+            y_ = BiRNN(self.x, w, b)  # logits
+            prediction = tf.nn.softmax(y_)
 
-            predictions = tf.argmax(y_, 1)
+            # Define loss and optimizer
+            loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=y_, labels=self.y))
+            optimizer = tf.train.AdamOptimizer()
+            # optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+            self.train_step = optimizer.minimize(loss_op)
+
+            # Evaluate model (with test y_, for dropout to be disabled)
+            correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.y, 1))
+            self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+            self.predict = tf.argmax(prediction, 1)
+
+            predictions = tf.argmax(prediction, 1)
             actuals = tf.argmax(self.y, 1)
 
             ones_like_actuals = tf.ones_like(actuals)

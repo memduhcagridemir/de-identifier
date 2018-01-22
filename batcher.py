@@ -5,12 +5,13 @@ import re
 class Batcher(object):
     def __init__(self, dataset, vocab):
         self.batch_num = -1
-        self.batch_length = 8192
+        self.batch_length = 4096
 
         self.dataset = dataset
 
         self.vocabulary = vocab
 
+        self.sequence_length = 8
         self.input_tokens = []
         self.output_tokens = []
 
@@ -41,8 +42,8 @@ class Batcher(object):
                 output[int(token.type is not None)] = 1
                 outputs.append(output)
 
-            for i in range(2, len(inputs) - 2):
-                self.input_tokens.append(inputs[i - 2:i + 3])
+            for i in range(len(inputs) - self.sequence_length):
+                self.input_tokens.append(inputs[i:i + self.sequence_length])
                 self.output_tokens.append(outputs[i])
 
     def __get_pos_enum(pos):
@@ -103,5 +104,9 @@ class Batcher(object):
         for index_to_delete in delete_ids:
             del self.input_tokens[index_to_delete]
             del self.output_tokens[index_to_delete]
+
+        zipped = list(zip(self.input_tokens, self.output_tokens))
+        random.shuffle(zipped)
+        self.input_tokens, self.output_tokens = zip(*zipped)
 
         return self
