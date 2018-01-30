@@ -30,7 +30,7 @@ class Batcher(object):
                 pos_feature[Batcher.__get_pos_enum(token.pos)] = 1
                 row += pos_feature
 
-                type_feature = [0] * 4
+                type_feature = [0] * 5
                 type_feature[Batcher.__get_type_enum(token.text)] = 1
                 row += type_feature
 
@@ -42,8 +42,8 @@ class Batcher(object):
                 output[int(token.type is not None)] = 1
                 outputs.append(output)
 
-            for i in range(len(inputs) - self.sequence_length):
-                self.input_tokens.append(inputs[i:i + self.sequence_length])
+            for i in range(self.sequence_length // 2, len(inputs) - self.sequence_length // 2):
+                self.input_tokens.append(inputs[i - self.sequence_length // 2:i + self.sequence_length // 2 + 1])
                 self.output_tokens.append(outputs[i])
 
     def __get_pos_enum(pos):
@@ -59,9 +59,14 @@ class Batcher(object):
             # all digits
             return 1
         if re.match(r"[a-z]+", text, flags=re.IGNORECASE):
+            # all text
             return 2
         if re.match(r"[0-9]+(?:/|-|\.)[0-9]+", text):
+            # 5/8
             return 3
+        if re.match(r"(?:[0-9]|\s|[a-z])+", text, flags=re.IGNORECASE):
+            # alphanumeric
+            return 4
         return 0
 
     def get_all(self):

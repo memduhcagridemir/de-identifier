@@ -5,15 +5,15 @@ class Model(object):
     def __init__(self, train_batcher=None, test_batcher=None):
         self.batcher = train_batcher
         self.test_batcher = test_batcher
-        self.number_of_timesteps = 8
-        self.number_of_features = 550
+        self.number_of_timesteps = 9
+        self.number_of_features = 551
 
         self.graph = tf.Graph()
         with self.graph.as_default():
             self.x = tf.placeholder(tf.float32, [None, self.number_of_timesteps, self.number_of_features])
             self.y = tf.placeholder(tf.float32, [None, 2])
 
-            number_of_hidden = 512
+            number_of_hidden = 256
             w = { "out": tf.Variable(tf.random_normal([2 * number_of_hidden, 2])) }
             b = { "out": tf.Variable(tf.random_normal([2])) }
 
@@ -35,7 +35,7 @@ class Model(object):
                 outputs, _, _ = rnn.static_bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32)
 
                 # Linear activation, using rnn inner loop last output
-                return tf.matmul(outputs[-1], weights['out']) + biases['out']
+                return tf.matmul(outputs[4], weights['out']) + biases['out']
 
             y_ = BiRNN(self.x, w, b)  # logits
             prediction = tf.nn.softmax(y_)
