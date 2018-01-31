@@ -1,5 +1,6 @@
 .idea/
 
+logs/
 data/
 !data/.gitkeep
 
