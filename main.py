@@ -1,5 +1,5 @@
-from model import Model
-from batcher import Batcher
+from Model import Model
+from Batcher import Batcher
 from Dataset import Data_i2b2
 
 

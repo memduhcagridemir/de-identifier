@@ -76,6 +76,15 @@ class Model(object):
                                                                tf.equal(predictions, zeros_like_predictions)), "float"))
                 tf.summary.scalar("fn", self.fn)
 
+                precision = tf.divide(self.tp, tf.add(self.tp, self.fp))
+                tf.summary.scalar("precision", precision)
+
+                recall = tf.divide(self.tp, tf.add(self.tp, self.fn))
+                tf.summary.scalar("recall", recall)
+
+                f1 = (2 * precision * recall) / (precision + recall)
+                tf.summary.scalar("f1", f1)
+
             self.summary_op = tf.summary.merge_all()
             self.writer = tf.summary.FileWriter("logs/{time}-{number_of_hidden}-{number_of_timesteps}".format(
                 time=datetime.datetime.now(),

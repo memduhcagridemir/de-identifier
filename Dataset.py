@@ -26,7 +26,6 @@ class Data_i2b2(object):
     def __init__(self):
         self.train_data = {}
         self.test_data = {}
-
         self.vocabulary_all = {}
         self.vocabulary_enumerated = {}
 
