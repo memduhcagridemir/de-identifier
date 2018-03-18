@@ -2,7 +2,6 @@ from Model import Model
 from Batcher import Batcher
 from Dataset import Data_i2b2
 
-
 data_i2b2 = Data_i2b2()
 # data_i2b2 = data_i2b2.load_data()
 # data_i2b2 = data_i2b2.save()

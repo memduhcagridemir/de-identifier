@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+    py3-deps:
+        build:
+            context: py3-deps
+        volumes:
+            - ./de-identifier:/root/de-identifier
+
