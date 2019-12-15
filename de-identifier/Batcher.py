@@ -5,7 +5,7 @@ import re
 class Batcher(object):
     def __init__(self, dataset, vocab):
         self.batch_num = -1
-        self.batch_length = 4096
+        self.batch_length = 16384
 
         self.dataset = dataset
 

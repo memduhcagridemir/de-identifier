@@ -6,4 +6,5 @@ services:
             context: py3-deps
         volumes:
             - ./de-identifier:/root/de-identifier
-
+        ports:
+        - "80:80"

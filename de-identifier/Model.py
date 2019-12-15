@@ -43,7 +43,7 @@ class Model(object):
                 tf.summary.scalar("loss", loss_op)
 
             with tf.name_scope('train'):
-                # optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+                # self.train_step = tf.train.GradientDescentOptimizer(learning_rate=0.2).minimize(loss_op)
                 self.train_step = tf.train.AdamOptimizer().minimize(loss_op)
 
             correct_pred = tf.equal(tf.argmax(probs, 1), tf.argmax(self.y, 1))
@@ -76,14 +76,14 @@ class Model(object):
                                                                tf.equal(predictions, zeros_like_predictions)), "float"))
                 tf.summary.scalar("fn", self.fn)
 
-                precision = tf.divide(self.tp, tf.add(self.tp, self.fp))
-                tf.summary.scalar("precision", precision)
+                self.precision = tf.divide(self.tp, tf.add(self.tp, self.fp))
+                tf.summary.scalar("precision", self.precision)
 
-                recall = tf.divide(self.tp, tf.add(self.tp, self.fn))
-                tf.summary.scalar("recall", recall)
+                self.recall = tf.divide(self.tp, tf.add(self.tp, self.fn))
+                tf.summary.scalar("recall", self.recall)
 
-                f1 = (2 * precision * recall) / (precision + recall)
-                tf.summary.scalar("f1", f1)
+                self.f1 = (2 * self.precision * self.recall) / (self.precision + self.recall)
+                tf.summary.scalar("f1", self.f1)
 
             self.summary_op = tf.summary.merge_all()
             self.writer = tf.summary.FileWriter("logs/{time}-{number_of_hidden}-{number_of_timesteps}".format(
@@ -111,10 +111,12 @@ class Model(object):
                 self.test_batcher.reset_batches()
                 batch_x, batch_y = self.test_batcher.get_all()
 
-                sum, acc, tp, tn, fp, fn = sess.run([self.summary_op, self.accuracy, self.tp, self.tn, self.fp,
-                                                     self.fn], feed_dict={self.x: batch_x, self.y: batch_y})
+                sum, f1, precision, recall, acc, tp, tn, fp, fn = sess.run([self.summary_op, self.f1, self.precision,
+                                                                            self.recall, self.accuracy, self.tp,
+                                                                            self.tn, self.fp, self.fn],
+                                                                           feed_dict={self.x: batch_x, self.y: batch_y})
                 self.writer.add_summary(sum, global_step=e)
-                print(acc, tp, tn, fp, fn)
+                print(f1, precision, recall, ' - ', acc, tp, tn, fp, fn)
 
                 saver = tf.train.Saver()
                 saver.save(sess, "data/model/epoch", global_step=e)
